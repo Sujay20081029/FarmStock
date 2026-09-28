@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>FarmStock Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f4f8f1, #edf7ef);
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .page-shell {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(31, 77, 48, 0.08);
+        }
+        .top-card {
+            background: linear-gradient(135deg, #1f7a4d, #64b98a);
+            color: white;
+        }
+        .nav-pills .nav-link.active {
+            background: #1f7a4d;
+        }
+        .table thead {
+            background: #f0f6f2;
+        }
+        .btn-primary {
+            background: #1f7a4d;
+            border-color: #1f7a4d;
+        }
+        .btn-primary:hover {
+            background: #176340;
+            border-color: #176340;
+        }
+        .btn-outline-primary {
+            color: #1f7a4d;
+            border-color: #1f7a4d;
+        }
+        .btn-outline-primary:hover {
+            background: #1f7a4d;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+        .muted-text {
+            color: #62736a;
+        }
+        .tiny-label {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7d72;
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="tiny-label">Farm Operations</div>
+            <h1 class="fw-bold mb-0">FarmStock Dashboard</h1>
+        </div>
+        <span class="badge bg-success-subtle text-success-emphasis px-3 py-2 rounded-pill">Live stock tracking</span>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card top-card h-100">
+                <div class="card-body">
+                    <div class="tiny-label text-white-50">Total crops</div>
+                    <h2 class="mt-2 mb-0" id="cropCount">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card top-card h-100" style="background: linear-gradient(135deg, #2f7d6d, #7ac6b8);">
+                <div class="card-body">
+                    <div class="tiny-label text-white-50">Harvest batches</div>
+                    <h2 class="mt-2 mb-0" id="batchCount">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card top-card h-100" style="background: linear-gradient(135deg, #ad7a1f, #e0b867);">
+                <div class="card-body">
+                    <div class="tiny-label text-white-50">Sales made</div>
+                    <h2 class="mt-2 mb-0" id="saleCount">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card top-card h-100" style="background: linear-gradient(135deg, #3b5fb0, #84a5eb);">
+                <div class="card-body">
+                    <div class="tiny-label text-white-50">Inventory items</div>
+                    <h2 class="mt-2 mb-0" id="inventoryCount">0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="crops-tab" data-bs-toggle="pill" data-bs-target="#crops" type="button">Crops</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="harvest-tab" data-bs-toggle="pill" data-bs-target="#harvest" type="button">Harvest batches</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sales-tab" data-bs-toggle="pill" data-bs-target="#sales" type="button">Sales</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="stock-tab" data-bs-toggle="pill" data-bs-target="#stock" type="button">Stock + revenue</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="crops">
+            <div class="card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Manage crops</h4>
+                </div>
+                <form id="cropForm">
+                    <input type="hidden" id="cropId"/>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="cropName" class="form-label">Crop name</label>
+                            <input type="text" class="form-control" id="cropName" placeholder="e.g. Tomato" required/>
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">Save crop</button>
+                            <button type="button" id="cancelCrop" class="btn btn-outline-secondary">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="cropTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="harvest">
+            <div class="card p-4 mb-4">
+                <h4 class="mb-3">Log harvest batch</h4>
+                <form id="harvestForm">
+                    <input type="hidden" id="harvestId"/>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="harvestCrop" class="form-label">Crop</label>
+                            <select id="harvestCrop" class="form-select" required></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="harvestQuantity" class="form-label">Quantity</label>
+                            <input type="number" min="1" class="form-control" id="harvestQuantity" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="harvestDate" class="form-label">Harvest date</label>
+                            <input type="date" class="form-control" id="harvestDate" required/>
+                        </div>
+                        <div class="col-md-2 d-flex gap-2 align-items-end">
+                            <button type="submit" class="btn btn-primary flex-fill">Save</button>
+                            <button type="button" id="cancelHarvest" class="btn btn-outline-secondary">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Crop</th>
+                            <th>Quantity</th>
+                            <th>Harvest date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="harvestTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="sales">
+            <div class="card p-4 mb-4">
+                <h4 class="mb-3">Record sale</h4>
+                <form id="saleForm">
+                    <input type="hidden" id="saleId"/>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="saleCrop" class="form-label">Crop</label>
+                            <select id="saleCrop" class="form-select" required></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="saleQuantity" class="form-label">Quantity</label>
+                            <input type="number" min="1" class="form-control" id="saleQuantity" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="saleDate" class="form-label">Sale date</label>
+                            <input type="date" class="form-control" id="saleDate" required/>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="saleTotal" class="form-label">Total price</label>
+                            <input type="number" min="0" step="0.01" class="form-control" id="saleTotal" required/>
+                        </div>
+                        <div class="col-md-2 d-flex gap-2 align-items-end">
+                            <button type="submit" class="btn btn-primary flex-fill">Save</button>
+                            <button type="button" id="cancelSale" class="btn btn-outline-secondary">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Crop</th>
+                            <th>Quantity</th>
+                            <th>Sale date</th>
+                            <th>Total price</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="saleTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="stock">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card p-4">
+                        <h4 class="mb-3">Current stock levels</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Crop</th>
+                                    <th>Available stock</th>
+                                </tr>
+                                </thead>
+                                <tbody id="stockTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card p-4">
+                        <h4 class="mb-3">Revenue by crop</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Crop</th>
+                                    <th>Total revenue</th>
+                                </tr>
+                                </thead>
+                                <tbody id="revenueTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const api = {
+        crops: '/api/crops',
+        harvest: '/api/harvest-batches',
+        sales: '/api/sales'
+    };
+
+    let cropOptions = [];
+
+    async function fetchJson(url, options = {}) {
+        const response = await fetch(url, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Request failed');
+        }
+        if (response.status === 204) return null;
+        return response.json();
+    }
+
+    function showMessage(message, type = 'success') {
+        const alertBox = document.createElement('div');
+        alertBox.className = `alert alert-${type} mt-3`;
+        alertBox.textContent = message;
+        const container = document.querySelector('.page-shell');
+        container.prepend(alertBox);
+        setTimeout(() => alertBox.remove(), 3500);
+    }
+
+    function setFormValue(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = value ?? '';
+    }
+
+    async function loadCrops() {
+        const crops = await fetchJson(api.crops);
+        cropOptions = crops;
+        populateCropSelects(crops);
+        renderCropRows(crops);
+        document.getElementById('cropCount').textContent = crops.length;
+    }
+
+    function populateCropSelects(crops) {
+        const harvestSelect = document.getElementById('harvestCrop');
+        const saleSelect = document.getElementById('saleCrop');
+        const options = ['<option value="">Select a crop</option>']
+            .concat(crops.map(crop => `<option value="${crop.id}">${crop.name}</option>`))
+            .join('');
+        harvestSelect.innerHTML = options;
+        saleSelect.innerHTML = options;
+    }
+
+    function renderCropRows(crops) {
+        const rows = crops.map(crop => `
+            <tr>
+                <td>${crop.id}</td>
+                <td>${crop.name}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary me-2" data-crop-edit="${crop.id}">Edit</button>
+                    <button class="btn btn-sm btn-danger" data-crop-delete="${crop.id}">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('cropTableBody').innerHTML = rows;
+
+        document.querySelectorAll('[data-crop-edit]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const crop = crops.find(item => item.id === Number(btn.dataset.cropEdit));
+                if (!crop) return;
+                setFormValue('cropId', crop.id);
+                setFormValue('cropName', crop.name);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        document.querySelectorAll('[data-crop-delete]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = Number(btn.dataset.cropDelete);
+                if (!confirm('Delete this crop?')) return;
+                try {
+                    await fetchJson(`${api.crops}/${id}`, { method: 'DELETE' });
+                    showMessage('Crop deleted successfully');
+                    await loadAll();
+                } catch (error) {
+                    showMessage(error.message, 'danger');
+                }
+            });
+        });
+    }
+
+    async function loadHarvests() {
+        const batches = await fetchJson(api.harvest);
+        renderHarvestRows(batches);
+        document.getElementById('batchCount').textContent = batches.length;
+    }
+
+    function renderHarvestRows(batches) {
+        const rows = batches.map(batch => `
+            <tr>
+                <td>${batch.id}</td>
+                <td>${batch.cropName}</td>
+                <td>${batch.quantity}</td>
+                <td>${batch.harvestDate}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary me-2" data-harvest-edit="${batch.id}">Edit</button>
+                    <button class="btn btn-sm btn-danger" data-harvest-delete="${batch.id}">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('harvestTableBody').innerHTML = rows;
+
+        document.querySelectorAll('[data-harvest-edit]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const batch = batches.find(item => item.id === Number(btn.dataset.harvestEdit));
+                if (!batch) return;
+                setFormValue('harvestId', batch.id);
+                setFormValue('harvestCrop', batch.cropId);
+                setFormValue('harvestQuantity', batch.quantity);
+                setFormValue('harvestDate', batch.harvestDate);
+                document.getElementById('harvest-tab').click();
+            });
+        });
+
+        document.querySelectorAll('[data-harvest-delete]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = Number(btn.dataset.harvestDelete);
+                if (!confirm('Delete this harvest batch?')) return;
+                try {
+                    await fetchJson(`${api.harvest}/${id}`, { method: 'DELETE' });
+                    showMessage('Harvest batch deleted successfully');
+                    await loadAll();
+                } catch (error) {
+                    showMessage(error.message, 'danger');
+                }
+            });
+        });
+    }
+
+    async function loadSales() {
+        const sales = await fetchJson(api.sales);
+        renderSalesRows(sales);
+        document.getElementById('saleCount').textContent = sales.length;
+    }
+
+    function renderSalesRows(sales) {
+        const rows = sales.map(sale => `
+            <tr>
+                <td>${sale.id}</td>
+                <td>${sale.cropName}</td>
+                <td>${sale.quantity}</td>
+                <td>${sale.saleDate}</td>
+                <td>$${Number(sale.totalPrice).toFixed(2)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary me-2" data-sale-edit="${sale.id}">Edit</button>
+                    <button class="btn btn-sm btn-danger" data-sale-delete="${sale.id}">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('saleTableBody').innerHTML = rows;
+
+        document.querySelectorAll('[data-sale-edit]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sale = sales.find(item => item.id === Number(btn.dataset.saleEdit));
+                if (!sale) return;
+                setFormValue('saleId', sale.id);
+                setFormValue('saleCrop', sale.cropId);
+                setFormValue('saleQuantity', sale.quantity);
+                setFormValue('saleDate', sale.saleDate);
+                setFormValue('saleTotal', Number(sale.totalPrice).toFixed(2));
+                document.getElementById('sales-tab').click();
+            });
+        });
+
+        document.querySelectorAll('[data-sale-delete]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = Number(btn.dataset.saleDelete);
+                if (!confirm('Delete this sale?')) return;
+                try {
+                    await fetchJson(`${api.sales}/${id}`, { method: 'DELETE' });
+                    showMessage('Sale deleted successfully');
+                    await loadAll();
+                } catch (error) {
+                    showMessage(error.message, 'danger');
+                }
+            });
+        });
+    }
+
+    async function loadStock() {
+        const [stocks, revenue] = await Promise.all([
+            fetchJson('/api/crops/stock'),
+            fetchJson('/api/sales/revenue?startDate=2000-01-01&endDate=2100-12-31')
+        ]);
+
+        const stockRows = stocks.map(stock => `
+            <tr>
+                <td>${stock.cropName}</td>
+                <td>${stock.currentStock}</td>
+            </tr>
+        `).join('');
+        document.getElementById('stockTableBody').innerHTML = stockRows;
+
+        const revenueRows = revenue.map(item => `
+            <tr>
+                <td>${item.cropName}</td>
+                <td>$${Number(item.totalRevenue).toFixed(2)}</td>
+            </tr>
+        `).join('');
+        document.getElementById('revenueTableBody').innerHTML = revenueRows || '<tr><td colspan="2" class="text-center muted-text">No revenue yet</td></tr>';
+        document.getElementById('inventoryCount').textContent = stocks.reduce((sum, item) => sum + item.currentStock, 0);
+    }
+
+    async function loadAll() {
+        await Promise.all([loadCrops(), loadHarvests(), loadSales(), loadStock()]);
+    }
+
+    document.getElementById('cropForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const id = document.getElementById('cropId').value;
+        const payload = { name: document.getElementById('cropName').value.trim() };
+        try {
+            if (id) {
+                await fetchJson(`${api.crops}/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+                showMessage('Crop updated successfully');
+            } else {
+                await fetchJson(api.crops, { method: 'POST', body: JSON.stringify(payload) });
+                showMessage('Crop created successfully');
+            }
+            document.getElementById('cropForm').reset();
+            await loadAll();
+        } catch (error) {
+            showMessage(error.message, 'danger');
+        }
+    });
+
+    document.getElementById('cancelCrop').addEventListener('click', () => {
+        document.getElementById('cropForm').reset();
+        document.getElementById('cropId').value = '';
+    });
+
+    document.getElementById('harvestForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const id = document.getElementById('harvestId').value;
+        const payload = {
+            cropId: Number(document.getElementById('harvestCrop').value),
+            quantity: Number(document.getElementById('harvestQuantity').value),
+            harvestDate: document.getElementById('harvestDate').value
+        };
+        try {
+            if (id) {
+                await fetchJson(`${api.harvest}/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+                showMessage('Harvest batch updated successfully');
+            } else {
+                await fetchJson(api.harvest, { method: 'POST', body: JSON.stringify(payload) });
+                showMessage('Harvest batch created successfully');
+            }
+            document.getElementById('harvestForm').reset();
+            await loadAll();
+        } catch (error) {
+            showMessage(error.message, 'danger');
+        }
+    });
+
+    document.getElementById('cancelHarvest').addEventListener('click', () => {
+        document.getElementById('harvestForm').reset();
+        document.getElementById('harvestId').value = '';
+    });
+
+    document.getElementById('saleForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const id = document.getElementById('saleId').value;
+        const payload = {
+            cropId: Number(document.getElementById('saleCrop').value),
+            quantity: Number(document.getElementById('saleQuantity').value),
+            saleDate: document.getElementById('saleDate').value,
+            totalPrice: Number(document.getElementById('saleTotal').value)
+        };
+        try {
+            if (id) {
+                await fetchJson(`${api.sales}/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+                showMessage('Sale updated successfully');
+            } else {
+                await fetchJson(api.sales, { method: 'POST', body: JSON.stringify(payload) });
+                showMessage('Sale created successfully');
+            }
+            document.getElementById('saleForm').reset();
+            await loadAll();
+        } catch (error) {
+            showMessage(error.message, 'danger');
+        }
+    });
+
+    document.getElementById('cancelSale').addEventListener('click', () => {
+        document.getElementById('saleForm').reset();
+        document.getElementById('saleId').value = '';
+    });
+
+    loadAll().catch(error => showMessage(error.message, 'danger'));
+</script>
+</body>
+</html>
